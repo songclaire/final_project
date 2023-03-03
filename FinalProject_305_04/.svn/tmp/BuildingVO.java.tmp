@@ -1,0 +1,23 @@
+package kr.or.ddit.vo;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+
+@EqualsAndHashCode(of="buildId")
+@Data
+@ToString
+public class BuildingVO {
+	private String buildId;
+<<<<<<< .mine
+	private String buildNum;
+	private String buildComm;
+||||||| .r309178
+=======
+	private String buildNum;
+	private String buildState;
+	private String commDesc;
+>>>>>>> .r309405
+	private String laboId;
+}
