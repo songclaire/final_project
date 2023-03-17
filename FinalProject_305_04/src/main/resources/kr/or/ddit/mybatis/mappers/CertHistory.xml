@@ -47,4 +47,20 @@
 		)
 	</insert>
 	
+	<select id="selectEnrollment" parameterType="String" resultType="HashMap">
+		SELECT 
+		    A.USER_ID
+<!-- 		    , A.CERT_DATE -->
+            , SUBSTR(TO_CHAR(A.CERT_DATE, 'YYYY-MM-DD'), 1, 4) || '년 ' || SUBSTR(TO_CHAR(A.CERT_DATE, 'YYYY-MM-DD'), 6, 2) || '월 ' || SUBSTR(TO_CHAR(A.CERT_DATE, 'YYYY-MM-DD'), 9, 2) || '일' "CERT_DATE"
+		    , B.USER_NM
+            , SUBSTR(B.USER_BIR, 1, 4) || '년 ' || SUBSTR(B.USER_BIR, 6, 2) || '월 ' || SUBSTR(B.USER_BIR, 9) || '일' "USER_BIR"
+		    , B.COLL_NM
+		    , B.MAJOR_NM
+            , SUBSTR(B.ENT_DATE, 1, 4) || '년 ' || SUBSTR(B.ENT_DATE, 6, 2) || '월 ' || SUBSTR(B.ENT_DATE, 9) || '일' "ENT_DATE"
+		    , C.CAM_YEAR
+		FROM CERT_HIST A INNER JOIN V_STU B ON A.USER_ID = B.STD_ID
+		    INNER JOIN V_CAMYEAR C ON A.USER_ID = C.STD_ID
+		WHERE A.USER_ID = #{userId}
+		AND CERT_HIST_ID = #{certHistId}
+	</select>
 </mapper>

@@ -26,14 +26,14 @@
 				) ESTA_SUB,
 				A.LECT_ID, A.LECT_NM, A.CREDIT, A.CAM_YEAR
                 ,B.CURLECT_ID, A.PROF_ID,
-                C.SEME_YEAR, C.SEME,
+                C.SEME_YEAR, C.SEME, C.SEME_ID,
 				(SELECT DISTINCT COMM_DESC
 				    FROM COMM
 				    WHERE COMM.COMM_ID = A.SYLLA_MEET) SYLLA_MEET
 		FROM V_LECTUREINFO A INNER JOIN CURR_LECT B ON(A.LECT_ID = B.LECT_ID)
                             INNER JOIN SEMESTER C ON (A.SEME_ID = C.SEME_ID)
 		WHERE A.PROF_ID=#{profId}
-		   AND A.SEME_ID=#{semeId}
+		   AND C.SEME_ID=#{semeId}
 	</select>
 
 
@@ -46,40 +46,48 @@
 
 	<select id="selectProfStdList" parameterType="LectureVO" resultMap="lectureMap">
 	        
-        WITH STUDENTVIEW AS (
-        SELECT A.STD_ID, B.MAJOR_ID, B.MAJOR_NM, C.COLL_NM, C.COLL_ID
-        , ( 
-        SELECT CAM_YEAR
-        FROM (
-             SELECT STD_ID 
-            , MAX(CAM_YEAR) KEEP(DENSE_RANK LAST ORDER BY RECO_ID) AS CAM_YEAR
-            , MAX(RECO_ID) KEEP(DENSE_RANK LAST ORDER BY RECO_ID) AS RECO_ID
-            , MAX(REC_NM) KEEP(DENSE_RANK LAST ORDER BY RECO_ID) AS REC_NM
-            FROM RECORD 
-            GROUP BY STD_ID
-            ) RE
-            WHERE A.STD_ID = RE.STD_ID
-        )   CAM_YEAR  
-        FROM STUDENT A INNER JOIN MAJOR B ON (A.MAJOR_ID = B.MAJOR_ID)
-						INNER JOIN COLL C ON (B.COLL_ID = C.COLL_ID)
-       ), CURR_LECTVIEW AS (
-       select D.CURLECT_ID,D.STD_ID, D.LECT_ID
-       , E.MAJOR_ID, E.MAJOR_NM, E.COLL_NM, E.COLL_ID, E.CAM_YEAR
-       from curr_lect D inner join STUDENTVIEW E on (D.STD_ID = E.STD_ID)
-       ), CURR_LECTUSERVIEW AS(
-        SELECT F.*, G.USER_NM
-        FROM CURR_LECTVIEW F INNER JOIN USR G ON (F.STD_ID = G.USER_ID)
-        )
-       select H.LECT_ID, H.LECT_NM, H.SEME_ID
-       , J.SEME_YEAR "semeVO.semeYear", J.SEME "semeVO.seme"
-       ,I.STD_ID, I.USER_NM
-       , I.COLL_ID "collVO.collId", I.COLL_NM "collVO.collNm"
-       , I.MAJOR_ID "majorVO.majorId", I.MAJOR_NM "majorVO.majorNm"
-       , I.CAM_YEAR 
-        from LECTURE H INNER JOIN SEMESTER J ON (H.SEME_ID = J.SEME_ID)
-        
-        LEFT OUTER JOIN CURR_LECTUSERVIEW I ON(H.LECT_ID = I.LECT_ID)
-        	WHERE H.LECT_ID=#{lectId}
+	 WITH STUDENTVIEW AS (
+	    SELECT A.STD_ID, B.MAJOR_ID, B.MAJOR_NM
+	          , C.COLL_NM, C.COLL_ID
+	          , ( SELECT CAM_YEAR
+	                FROM ( SELECT STD_ID 
+	                             , MAX(CAM_YEAR) KEEP(DENSE_RANK LAST ORDER BY RECO_ID) AS CAM_YEAR
+	                             , MAX(RECO_ID) KEEP(DENSE_RANK LAST ORDER BY RECO_ID) AS RECO_ID
+	                             , MAX(REC_NM) KEEP(DENSE_RANK LAST ORDER BY RECO_ID) AS REC_NM
+	                         FROM RECORD 
+	                     GROUP BY STD_ID
+	                     ) RE
+	              WHERE A.STD_ID = RE.STD_ID
+	            )   CAM_YEAR  
+	       FROM STUDENT A INNER JOIN MAJOR B ON (A.MAJOR_ID = B.MAJOR_ID)
+	                      INNER JOIN COLL C ON (B.COLL_ID = C.COLL_ID)
+	)
+	, CURR_LECTVIEW AS (
+	    SELECT D.CURLECT_ID, D.STD_ID, D.LECT_ID
+	           , E.MAJOR_ID, E.MAJOR_NM, E.COLL_NM
+	           , E.COLL_ID, E.CAM_YEAR
+	      FROM CURR_LECT D INNER JOIN STUDENTVIEW E ON (D.STD_ID = E.STD_ID)
+	)
+	, CURR_LECTUSERVIEW AS(
+	    SELECT F.*, G.USER_NM
+	      FROM CURR_LECTVIEW F INNER JOIN USR G ON (F.STD_ID = G.USER_ID)
+	)
+	SELECT RNUM, LECT_ID, LECT_NM, SEME_ID
+	            , SEME_YEAR "semeVO.semeYear", SEME "semeVO.seme"
+	            , STD_ID, USER_NM
+	            , COLL_ID "collVO.collId", COLL_NM "collVO.collNm"
+	            , MAJOR_ID "majorVO.majorId", MAJOR_NM "majorVO.majorNm"
+	            , CAM_YEAR
+	  FROM (SELECT ROW_NUMBER() OVER(ORDER BY I.STD_ID) AS RNUM, H.LECT_ID, H.LECT_NM, H.SEME_ID
+	            , J.SEME_YEAR, J.SEME
+	            , I.STD_ID, I.USER_NM
+	            , I.COLL_ID, I.COLL_NM
+	            , I.MAJOR_ID, I.MAJOR_NM
+	            , I.CAM_YEAR 
+	          FROM LECTURE H INNER JOIN SEMESTER J ON (H.SEME_ID = J.SEME_ID)
+	                         LEFT OUTER JOIN CURR_LECTUSERVIEW I ON(H.LECT_ID = I.LECT_ID)  
+	          WHERE H.LECT_ID = #{lectId}
+	        )
 	</select>
 
 
@@ -102,19 +110,7 @@
 		WHERE B.STD_ID = #{stdId}
 		  AND D.LECT_ID = #{lectId}
 	</select>
-	
-<!-- 	attnedid, currect_id를 받아올 select 하나 추가해야함 -->
-<!-- 	<update id="updateAttendStat" parameterType="String"> -->
-<!-- 		 update  -->
-<!-- 		set  -->
-<!-- 		where  attendId, currect_id -->
-<!-- 	</update> -->
 
-<!-- <select id=""> -->
-<!-- SELECT ATTEND_ID -->
-<!-- FROM ATTEND -->
-
-<!-- </select> -->
 
 <update id="updateAttendStat" parameterType="AttendVO" >
 UPDATE ATTEND

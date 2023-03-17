@@ -4,8 +4,8 @@
 	
 	<!-- 수강신청 검색 조건 -->
 	<sql id="searchFrag">
-		<trim prefix=" WHERE " prefixOverrides="AND |OR " suffixOverrides="," >
-			NOT LECT_ID IN (SELECT LECT_ID FROM SUGANG_CART)
+<!-- 		<trim prefix=" WHERE " prefixOverrides="AND |OR " suffixOverrides="," > -->
+<!-- 			(LECT_ID NOT IN (SELECT LECT_ID FROM SUGANG_CART WHERE STD_ID = #{sugangCartVO.stdId}) OR LECT_ID IN (SELECT LECT_ID FROM CURR_LECT WHERE STD_ID = #{sugangCartVO.stdId})) -->
 			<if test="detailCondition neq null">
 				<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(detailCondition.collId)">
 					AND COLL_ID = #{detailCondition.collId}
@@ -26,16 +26,25 @@
 					</foreach>
 				</if>
 			</if>
+<!-- 		</trim> -->
+	</sql>
+	
+	<!-- 장바구니 검색조건 -->
+	<sql id="searchCartFrag">
+		<trim prefix=" WHERE " prefixOverrides="AND |OR " suffixOverrides="," >
+			WHERE (LECT_ID NOT IN (SELECT LECT_ID FROM SUGANG_CART WHERE STD_ID = #{sugangCartVO.stdId}) OR LECT_ID IN (SELECT LECT_ID FROM CURR_LECT WHERE STD_ID = #{sugangCartVO.stdId}))
 		</trim>
 	</sql>
 	
-	<!-- 수강신청 검색에 따른 강의 목록 LIST SELECT문 -->
+	<!-- lectureMap -->
 	<resultMap type="LectureVO" id="lectureMap" autoMapping="true">
 		<id property="lectId" column="LECT_ID" />
 		<association property="majorVO" javaType="MajorVO" autoMapping="true" />
 		<association property="profVO" javaType="ProfessorVO" autoMapping="true" />
 	</resultMap>
-	<select id="selectLectureList" parameterType="PagingVO" resultMap="lectureMap">
+	
+	<!-- 수강신청 검색에 따른 강의 목록 LIST SELECT문 -->
+	<select id="selectLectureList" parameterType="hashMap" resultMap="lectureMap">
 		SELECT LECT_ID,
 		    (
 		        SELECT COMM_DESC
@@ -44,6 +53,7 @@
 		    ) AS ESTA_SUB
 		    , MAJOR_NM, CAM_YEAR, LECT_NM, USER_NM, CREDIT, NUM_CLASS
 		FROM V_LECTUREINFO
+		WHERE (LECT_ID NOT IN (SELECT LECT_ID FROM SUGANG_CART WHERE STD_ID = #{sugangCartVO.stdId}) AND LECT_ID NOT IN (SELECT LECT_ID FROM CURR_LECT WHERE STD_ID = #{sugangCartVO.stdId}))
 		<include refid="searchFrag" />
 		ORDER BY ESTA_SUB DESC
 	</select>
@@ -59,6 +69,8 @@
 	        , B.MAJOR_NM, B.CAM_YEAR, B.LECT_NM, B.USER_NM, B.CREDIT, B.NUM_CLASS
 		FROM SUGANG_CART A INNER JOIN V_LECTUREINFO B ON (A.LECT_ID = B.LECT_ID)
 		WHERE STD_ID = #{stdId}
+		AND SUGANG_STATE = 'N'
+		AND NOT A.LECT_ID IN (SELECT C.LECT_ID FROM CURR_LECT C WHERE STD_ID = #{stdId})
 		ORDER BY ESTA_SUB DESC
 	</select>
 	
@@ -67,11 +79,22 @@
 			INSERT INTO SUGANG_CART (
 				STD_ID
 				, LECT_ID
+				, SUGANG_STATE
 			) VALUES (
 				#{stdId}
-				, #{lectId}			
+				, #{lectId}
+				, 'N'
 			)
 	</insert>
+	
+	<!-- 수강신청 장바구니 UPDATE문 -->
+	<update id="updateCart" parameterType="SugangCartVO">
+		UPDATE SUGANG_CART
+		SET
+			SUGANG_STATE = #{sugangState}
+		WHERE STD_ID = ${stdId}
+		AND LECT_ID = ${lectId}
+	</update>
 	
 	<!-- 수강신청 장바구니 삭제 DELETE문 -->
 	<delete id="deleteCart" parameterType="kr.or.ddit.vo.SugangCartVO">
@@ -80,7 +103,4 @@
 		WHERE LECT_ID = #{lectId}
 		AND STD_ID = #{stdId}
 	</delete>
-	
-	
-
 </mapper>

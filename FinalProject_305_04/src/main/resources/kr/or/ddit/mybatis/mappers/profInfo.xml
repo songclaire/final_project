@@ -43,7 +43,7 @@
 		<collection property="recordList" ofType="RecordVO" autoMapping="true" >
 			<id property="recoId" column="RECO_ID"/>
 		</collection>
-<!-- 		<collection property="attaFileList" ofType="AttaFileVO" autoMapping="true" /> -->
+		<collection property="attaFileList" ofType="AttaFileVO" autoMapping="true" />
 			
 	</resultMap>
 	
@@ -119,11 +119,21 @@
 		        , F.COMM_ID
 		        , F.COMM_DESC
 		        , F.COMM_GRP_ID
+		        , G.ATTA_ID
+		        , G.ATTA_FILENM
+		        , G.ATTA_SAVENM
+		        , G.ATTA_MIME
+		        , G.ATTA_FANCYSIZE
+		        , G.ATTA_DOWNLOAD
+		        , G.ATTA_PATH
+		        , G.ATTA_SN
+		        , G.ATTA_TASK		        
 		  FROM USR A INNER JOIN PROFESSOR B ON (A.USER_ID = B.PROF_ID)
 		             INNER JOIN LABO C ON (B.LABO_ID = C.LABO_ID)
 		             INNER JOIN MAJOR D ON (B.MAJOR_ID = D.MAJOR_ID)
 		             INNER JOIN COLL E ON (D.COLL_ID = E.COLL_ID)
 		             LEFT OUTER JOIN COMM F ON (C.BUILD_ID = F.COMM_ID)
+		             LEFT OUTER JOIN ATTA_FILE G ON (TO_CHAR(A.USER_ID) = G.ATTA_ID)
 		 WHERE B.PROF_ID = #{profId}
 	</select>
 
@@ -248,7 +258,7 @@
 		 WHERE COMM_GRP_ID = 'BUILDING'
 	</select>
 	
-	<select id="selectBuildingNum" resultType="kr.or.ddit.vo.BuildingVO">
+	<select id="selectBuildingNum" resultType="LaboVO">
 		SELECT LABO_ID, BUILD_ID, LABO_TEL, BUILD_NUM
 		  FROM LABO
 		 WHERE BUILD_ID = #{commId}

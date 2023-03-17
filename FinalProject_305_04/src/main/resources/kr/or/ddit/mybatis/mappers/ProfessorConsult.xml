@@ -48,6 +48,7 @@
 		FROM CONSULT
 		WHERE STD_ID = #{stdId}
 		AND PROF_ID = #{profId}
+		AND NOT CONS_STATE IN 6
 	</select>
 	
 	<resultMap type="ConsultVO" id="consultMap" autoMapping="true">
@@ -77,6 +78,8 @@
 		        FROM CONSULT
 		        WHERE PROF_ID = #{consult.profId}
 		        AND STD_ID = #{consult.stdId}
+		        AND NOT CONS_STATE IN 6
+		        <include refid="searchFrag" />
 		        ORDER BY CONS_ID
 		    )
 		    SELECT DENSE_RANK() OVER(ORDER BY I.RNUM DESC) RNUM2, I.*
@@ -123,6 +126,11 @@
 		    ORDER BY B.USER_ID
 		)
 		SELECT ROWNUM RNUM, STDLIST.*
+                , (
+                    SELECT COUNT(*)
+                    FROM CONSULT
+                    WHERE STD_ID = STDLIST.USER_ID 
+                ) CONS_CNT
 		FROM STDLIST
 	</select>
 	

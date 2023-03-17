@@ -29,6 +29,7 @@
 		           , C.DEPT_NM
 		      FROM USR A INNER JOIN EMP B ON (A.USER_ID = B.EMP_ID) 
 		                 INNER JOIN DEPT C ON (B.DEPT_ID = C.DEPT_ID)
+		     ORDER BY EMP_ID            
 		)
 		SELECT B.*
 		FROM (

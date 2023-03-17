@@ -10,6 +10,7 @@
 		<collection property="recordList" ofType="RecordVO" autoMapping="true">
 			<association property="semester" javaType="SemesterVO" autoMapping="true" />
 		</collection>
+		<collection property="attaFileList" ofType="AttaFileVO" autoMapping="true" />
 	</resultMap>
 	
 	
@@ -24,7 +25,7 @@
 	
 	<select id="selectRecordList" parameterType="String" resultMap="studentMap">
 		SELECT ROWNUM RNUM
-			,A.STD_ID
+			, A.STD_ID
 			, A.MAJOR_ID
 			, A.PROF_ID
 			, A.ENT_DATE
@@ -57,9 +58,19 @@
             , A.REC_NM
             , A.REC_NAME
 			, C.COMM_DESC AS REC_STATUS
+			, D.ATTA_ID
+		    , D.ATTA_FILENM
+		    , D.ATTA_SAVENM
+		    , D.ATTA_MIME
+		    , D.ATTA_FANCYSIZE
+		    , D.ATTA_DOWNLOAD
+		    , D.ATTA_PATH
+		    , D.ATTA_SN
+		    , D.ATTA_TASK
 		FROM V_RECORD A LEFT OUTER JOIN COMM C ON A.REC_STATUS = C.COMM_ID
+			LEFT OUTER JOIN ATTA_FILE D ON TO_CHAR(A.STD_ID) = D.ATTA_ID
 	    WHERE A.STD_ID = #{stdId}
-	    ORDER BY RNUM DESC
+	    ORDER BY REC_UPDATE DESC, REC_DATE DESC
 	</select>	
 	
 	<insert id="insertRecord" parameterType="RecordVO">

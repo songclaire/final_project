@@ -82,7 +82,7 @@
 			, CALENDAR_MEMO
 		) VALUES(
 			#{calendarNo,jdbcType=VARCHAR}
-			, #{semeId,jdbcType=VARCHAR}
+			, 'DA10014'
 			, #{calendarStart,jdbcType=VARCHAR}
 			, #{calendarEnd,jdbcType=VARCHAR}
 			, #{calendarTitle,jdbcType=VARCHAR}

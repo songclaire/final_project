@@ -7,6 +7,12 @@
 
 <resultMap type="MyStudentVO" id="stdLect">
 	<id property="stdId" column="STD_ID"/>
+	<association property="currLectVO" javaType="CurrLectVO" autoMapping="true">
+		<id property="curlectId" column="CURLECT_ID"/>
+	</association>
+	<association property="semeVO" javaType="SemesterVO" autoMapping="true">
+		<id property="semeId" column="SEME_ID"/>
+	</association>
 	<collection property="mylectureList" ofType="MyLectureVO" autoMapping="true">
 		<id property="lectId" column="LECT_ID"/>
 		<association property="userVO" javaType="UsrVO" autoMapping="true"></association>
@@ -20,7 +26,7 @@ SELECT
 (SELECT COMM_DESC
         FROM COMM
         WHERE COMM.COMM_ID = B.ESTA_SUB) AS ESTA_SUB
-,B.LECT_ID, B.LECT_NM, B.MAJOR_NM, B.COLL_NM, B.USER_NM, B.CREDIT 
+,A.CURLECT_ID, B.LECT_ID, B.LECT_NM, B.MAJOR_NM, B.COLL_NM, B.USER_NM, B.CREDIT 
 ,C.SEME_YEAR , C.SEME , C.SEME_ID, A.STD_ID
 FROM CURR_LECT A INNER JOIN V_LECTUREINFO B ON (A.LECT_ID = B.LECT_ID)
                     INNER JOIN SEMESTER C ON (B.SEME_ID = C.SEME_ID)

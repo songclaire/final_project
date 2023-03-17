@@ -240,12 +240,14 @@
 		    STD_ID, 
 		    MAJOR_ID, 
 		    PROF_ID, 
-		    ENT_DATE
+		    ENT_DATE,
+		    SUGANG_CREDIT
 		)VALUES(
 		#{userId,jdbcType=VARCHAR}
 		, #{majorId,jdbcType=VARCHAR}
 		, #{profId,jdbcType=VARCHAR}
 		, #{entDate,jdbcType=VARCHAR}
+		, 18
 		)
 	</insert>
 	
@@ -303,6 +305,9 @@
 		SELECT SEME_ID, SEME_YEAR, SEME
 		FROM SEMESTER 
 	</select>	
+	
+	
+	
 	
 </mapper>
 

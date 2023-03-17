@@ -72,7 +72,7 @@
 					    FROM   FACI_LENT A, FACI_TIME B
 					    WHERE  A.AVAIL_TIMEID = B.AVAIL_TIMEID
 					    AND    A.FACI_ID = #{faciId}
-					    AND    REPLACE(A.RESERV_DATE,'-','') BETWEEN 20230227 AND 20230313
+					    AND    REPLACE(A.RESERV_DATE,'-','') BETWEEN 20230313 AND 20230317
 					) B
 					WHERE A.ST_TIME = B.ST_TIME(+)
 			)
@@ -84,29 +84,29 @@
 	</select>
 	
 	
-<!-- 	<insert id="insertFacilityRes" parameterType="FaciLentVO"> -->
-<!-- 		<selectKey order="BEFORE" resultType="String" keyProperty="faciLeaseid"> -->
-<!-- 		SELECT 'IB1'||LPAD(NOTI_SEQ.NEXTVAL, 4, '0') -->
-<!-- 		    FROM DUAL -->
-<!-- 		</selectKey>	 -->
-<!-- 		INSERT INTO FACI_LENT( -->
-<!-- 		    FACI_LEASEID -->
-<!-- 		    , FACI_ID -->
-<!-- 		    , USER_ID -->
-<!-- 		    , AVAIL_TIMEID -->
-<!-- 		    , RESERV_DATE -->
-<!-- 		    , NUM_USERS -->
-<!-- 		    , PUR_USE -->
-<!-- 		) VALUES ( -->
-<!-- 		    #{faciLeaseid,jdbcType=VARCHAR}  -->
-<!-- 		    , #{faciId,jdbcType=VARCHAR}       -->
-<!-- 		    , #{userId,jdbcType=NUMERIC}       -->
-<!-- 		    , #{availTimeid,jdbcType=VARCHAR}  -->
-<!-- 		    , #{reservDate,jdbcType=VARCHAR}   -->
-<!-- 		    , #{numUsers,jdbcType=NUMERIC}     -->
-<!-- 		    , #{purUse,jdbcType=VARCHAR}       -->
-<!-- 		);	 -->
-<!-- 	</insert> -->
+	<insert id="insertFacilityRes" parameterType="FaciLentVO">
+		<selectKey order="BEFORE" resultType="String" keyProperty="faciLeaseid">
+		SELECT 'IB1'||LPAD(NOTI_SEQ.NEXTVAL, 4, '0')
+		    FROM DUAL
+		</selectKey>	
+		INSERT INTO FACI_LENT(
+		    FACI_LEASEID
+		    , FACI_ID
+		    , USER_ID
+		    , AVAIL_TIMEID
+		    , RESERV_DATE
+		    , NUM_USERS
+		    , PUR_USE
+		) VALUES (
+		    #{faciLeaseid,jdbcType=VARCHAR} 
+		    , #{faciId,jdbcType=VARCHAR}      
+		    , #{userId,jdbcType=NUMERIC}      
+		    , #{availTimeid,jdbcType=VARCHAR} 
+		    , TO_CHAR(TO_DATE(#{reservDate,jdbcType=VARCHAR},'YYYYMMDD'),'YYYY-MM-DD') 
+		    , #{numUsers,jdbcType=NUMERIC}    
+		    , #{purUse,jdbcType=VARCHAR}      
+		)
+	</insert>
 	
 	
 	

@@ -28,7 +28,8 @@
 	<select id="selectMenuVO" parameterType="String" resultType="MenuVO">
 		SELECT MENU_ID
 		FROM MENU
-		WHERE MENU_URL = #{menuUrl}
+		WHERE INSTR(#{menuUrl}, MENU_URL) > 0
+		AND INSTR(MENU_ROLE, #{menuRole}) > 0
 	</select>
 	
 	<insert id="insertBMenu" parameterType="BMenuVO">

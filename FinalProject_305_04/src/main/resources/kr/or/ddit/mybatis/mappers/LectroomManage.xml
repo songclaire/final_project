@@ -45,8 +45,9 @@
 		    , TO_CHAR(APRV_DATE, 'YYYY-MM-DD') AS APRV_DATE
 		    , SYLLA_ID
 		    , NVL(LECT_ID, 0) AS LECT_ID
+		    , LECT_NM
 		FROM (
-		    SELECT ROWNUM AS RNUM, D.MAJOR_NM, C.USER_NM , E.APRV_DATE, A.SYLLA_ID, E.APRV_STATE, F.LECT_ID
+		    SELECT ROWNUM AS RNUM, D.MAJOR_NM, C.USER_NM , E.APRV_DATE, A.SYLLA_ID, E.APRV_STATE, F.LECT_ID, F.LECT_NM
 		    FROM SYLLABUS A 
 		    INNER JOIN PROFESSOR B ON (A.PROF_ID = B.PROF_ID)
 		    INNER JOIN USR C ON (A.PROF_ID = C.USER_ID)
@@ -189,6 +190,64 @@
                         		WHERE SYLLA_ID = #{syllaId})
 	</delete>
 	
+	
+	
+	<resultMap type="SyllabusVO" id="syllabusMap" autoMapping="true">
+		<id property="syllaId" column="SYLLA_ID"/>
+		<association property="semesterVO" autoMapping="true" javaType="SemesterVO"></association>
+		<association property="subMajorVO" autoMapping="true" javaType="SubMajorVO"></association>
+		<association property="buildingVO" autoMapping="true" javaType="BuildingVO"></association>
+		<association property="lectRoomVO" autoMapping="true" javaType="LectRoomVO"></association>
+		<association property="syllaApprVO" autoMapping="true" javaType="SyllaApprVO"></association>
+		<association property="professorVO" autoMapping="true" javaType="ProfessorVO"></association>
+		<collection property="scoreCritList" autoMapping="true" ofType="ScoreCritVO"></collection>
+		<collection property="lectWeekList" autoMapping="true" ofType="LectWeekVO"></collection>
+	</resultMap>
+	
+	<select id="selectDetailLect" parameterType="String" resultMap="syllabusMap">
+		SELECT B.SEME_YEAR
+	    , B.SEME as SEME
+	    ,( SELECT USER_NM
+	         FROM USR
+	        WHERE USR.USER_ID = A.PROF_ID
+	    ) AS USER_NM
+	    ,(SELECT COMM_DESC
+	          FROM COMM
+	         WHERE COMM.COMM_ID = C.BUILD_ID
+	    ) AS BUILD_ID
+	    , C.BUILD_NUM
+	    , A.LECT_NM
+	    , D.SUBJECT_NM
+	    , A.LECT_HOUR
+	    , A.CAM_YEAR
+	    , A.HOPE_TIME
+	    , A.HOPE_MAX
+	    , A.TEXTBOOK
+	    , A.LECT_COM
+	    , A.NOTE
+	    ,(SELECT COMM_DESC
+	       FROM COMM
+	      WHERE COMM.COMM_ID = A.SYLLA_MEET
+	    ) AS SYLLA_MEET
+	    , A.SYLLA_ID
+	    , E.SCORE_CRIT_NM
+	    , E.SCORE_CRIT_RATIO
+	    , F.LECT_WEEK
+	    , F.LECT_WEEKLY
+	  FROM SYLLABUS A INNER JOIN SEMESTER B ON (A.SEME_ID = B.SEME_ID)
+	                  INNER JOIN LECT_ROOM C ON (A.LECT_ROOM_ID = C.LECT_ROOM_ID)
+	                  INNER JOIN SUB_MAJOR D ON (A.SUB_MAJOR_ID = D.SUB_MAJOR_ID)
+	                  INNER JOIN SCORE_CRIT E ON (A.SYLLA_ID = E.SYLLA_ID)
+	                  INNER JOIN LECT_WEEK F ON (A.SYLLA_ID = F.SYLLA_ID)
+		WHERE A.SYLLA_ID = #{syllaId}
+	</select>
+	
+	<select id="selectLectTimes" parameterType="map" resultType="String">
+		SELECT A.LECT_TIME_ID
+		FROM ASSIGN_ROOM A INNER JOIN LECT_ROOM B ON (A.LECT_ROOM_ID = B.LECT_ROOM_ID)
+		WHERE BUILD_ID = #{buildId}
+		AND BUILD_NUM = #{buildNum}
+	</select>
 	
 <!-- 	<resultMap type="LectureVO" id="lectureMap" autoMapping="true"> -->
 <!-- 		<id property="lectId" column="LECT_ID" /> -->

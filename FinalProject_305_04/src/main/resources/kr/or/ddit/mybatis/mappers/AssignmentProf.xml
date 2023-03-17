@@ -28,14 +28,14 @@
 			   	  B.ASGN_SUBM_ID
 			FROM ASGN A LEFT OUTER JOIN ASGN_SUBM B ON (A.ASGN_ID = B.ASGN_ID)
 			WHERE LECT_ID = #{detailCondition.lectId}
-
+			ORDER BY ASGN_ID 
 		    
 		)
 		SELECT B.* FROM (
 		    SELECT ROWNUM RNUM2, A.*
 		    FROM (
 		        SELECT ROWNUM RNUM, ORDEREDASSIGNMENTPROF.*
-		        FROM ORDEREDASSIGNMENTPROF
+		        FROM ORDEREDASSIGNMENTPROF ORDER BY ASGN_ID DESC
 		    ) A
 		) B
 		WHERE RNUM2 BETWEEN #{startRow} AND #{endRow}
@@ -192,7 +192,7 @@
 	<update id="updateAssignScore" parameterType="AssignmentSubmitVO">
 		UPDATE ASGN_SUBM
 		SET 
-		    ASSIGN_SCORE = #{assignScore}
+		    ASSIGN_SCORE = #{assignScore,jdbcType=NUMERIC}
 		WHERE ASGN_SUBM_ID = #{asgnSubmId}
 	</update>
 	
